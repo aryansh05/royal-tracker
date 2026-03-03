@@ -10,7 +10,6 @@ export default function RoyalCodePage() {
 
   const [mounted, setMounted] = useState(false);
   const [particles, setParticles] = useState<any[]>([]);
-
   const [code, setCode] = useState("");
   const [showCode, setShowCode] = useState(false);
   const [error, setError] = useState("");
@@ -62,48 +61,25 @@ export default function RoyalCodePage() {
     router.push("/dashboard?mode=monarch");
   }
 
-  function handleMouseMove(e: React.MouseEvent<HTMLFormElement>) {
-    const el = e.currentTarget;
-    const rect = el.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const rotateX = ((y / rect.height) - 0.5) * 6;
-    const rotateY = ((x / rect.width) - 0.5) * -6;
-
-    el.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-  }
-
-  function resetTilt(e: React.MouseEvent<HTMLFormElement>) {
-    e.currentTarget.style.transform = "rotateX(0deg) rotateY(0deg)";
-  }
-
   if (!mounted) return null;
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
       transition={{ duration: 0.6 }}
-      className="relative min-h-screen flex items-center justify-center text-white overflow-hidden"
+      className="relative min-h-screen flex items-center justify-center text-white overflow-hidden px-4"
     >
-      {/* Background Image */}
+      {/* Background */}
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: "url('/images/dashboard-bg.jpg')" }}
       />
-
-      {/* Dark Overlay */}
       <div className="absolute inset-0 bg-black/70" />
-
-      {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-900/60 via-black/40 to-black/80 animate-gradient" />
-
-      {/* Spotlight */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_60%)]" />
 
-      {/* Floating Particles */}
+      {/* Particles */}
       <div className="absolute inset-0 pointer-events-none">
         {particles.map((p, i) => (
           <div
@@ -123,14 +99,23 @@ export default function RoyalCodePage() {
       {/* Card */}
       <motion.form
         onSubmit={handleVerify}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={resetTilt}
         initial={{ y: 30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8 }}
-        className="relative z-10 w-96 backdrop-blur-xl bg-white/10 border border-purple-500/30 rounded-3xl p-10 shadow-[0_0_50px_rgba(168,85,247,0.5)] hover:shadow-[0_0_70px_rgba(168,85,247,0.8)] transition-all duration-500 shimmer"
+        className="
+          relative z-10
+          w-full max-w-md
+          backdrop-blur-xl bg-white/10
+          border border-purple-500/30
+          rounded-3xl
+          p-6 sm:p-10
+          shadow-[0_0_50px_rgba(168,85,247,0.5)]
+          hover:shadow-[0_0_70px_rgba(168,85,247,0.8)]
+          transition-all duration-500
+          shimmer
+        "
       >
-        <h1 className="text-3xl font-bold text-center mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-8">
           Welcome, My Majesty 👑
         </h1>
 
@@ -138,8 +123,13 @@ export default function RoyalCodePage() {
         <div className="relative mb-4">
           <input
             type={showCode ? "text" : "password"}
+            autoComplete="off"
             placeholder="Enter Royal Code"
-            className="w-full p-3 rounded-xl bg-zinc-800/80 outline-none focus:ring-2 focus:ring-purple-500 focus:shadow-[0_0_15px_rgba(168,85,247,0.8)] transition-all"
+            className="
+              w-full p-3 rounded-xl bg-zinc-800/80
+              outline-none focus:ring-2 focus:ring-purple-500
+              transition-all
+            "
             value={code}
             onChange={(e) => setCode(e.target.value)}
           />
@@ -161,51 +151,15 @@ export default function RoyalCodePage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-purple-600 hover:bg-purple-700 transition-colors p-3 rounded-xl font-semibold"
+          className="
+            w-full bg-purple-600 hover:bg-purple-700
+            transition-colors p-3 rounded-xl font-semibold
+            active:scale-95
+          "
         >
           {loading ? "Verifying..." : "Unlock Kingdom"}
         </button>
       </motion.form>
-
-      {/* Animations */}
-      <style jsx global>{`
-        @keyframes float {
-          0% { transform: translateY(0px); opacity: 0.5; }
-          50% { transform: translateY(-15px); opacity: 1; }
-          100% { transform: translateY(0px); opacity: 0.5; }
-        }
-
-        @keyframes gradient {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-
-        .animate-float {
-          animation: float linear infinite;
-        }
-
-        .animate-gradient {
-          background-size: 400% 400%;
-          animation: gradient 15s ease infinite;
-        }
-
-        .shimmer {
-          background: linear-gradient(
-            120deg,
-            rgba(255,255,255,0.05) 25%,
-            rgba(255,255,255,0.15) 50%,
-            rgba(255,255,255,0.05) 75%
-          );
-          background-size: 200% 100%;
-          animation: shimmer 6s linear infinite;
-        }
-      `}</style>
     </motion.div>
   );
 }

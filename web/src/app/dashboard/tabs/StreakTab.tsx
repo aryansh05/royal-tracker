@@ -49,7 +49,7 @@ export default function StreakTab({
     if (mode === "monarch") {
       fetchTasksFromDB();
     } else {
-      setTasks([]); // Slave starts empty (session only)
+      setTasks([]);
     }
   }, [mode]);
 
@@ -67,8 +67,6 @@ export default function StreakTab({
 
     setTasks(resetBrokenStreaks(data));
   }
-
-  /* ---------------- RESET BROKEN STREAKS ---------------- */
 
   function resetBrokenStreaks(data: StreakTask[]) {
     const todayStr = new Date().toISOString().split("T")[0];
@@ -194,57 +192,77 @@ export default function StreakTab({
   /* ---------------- UI ---------------- */
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
 
+      {/* Notification */}
       {notification && (
-        <div className="fixed bottom-6 right-6 z-[9999]
-                        backdrop-blur-xl bg-white/10
-                        border border-white/20
-                        shadow-[0_8px_30px_rgba(0,0,0,0.6)]
-                        px-6 py-4 rounded-2xl
-                        text-white text-sm font-medium">
+        <div
+          className="
+            fixed bottom-6 right-4 sm:right-8 z-[9999]
+            backdrop-blur-xl bg-white/10
+            border border-white/20
+            shadow-[0_8px_30px_rgba(0,0,0,0.6)]
+            px-5 py-3 rounded-2xl
+            text-white text-sm font-medium
+          "
+        >
           {notification.message}
         </div>
       )}
 
-      <div className="backdrop-blur-2xl bg-white/5 border border-white/10 
-                      shadow-[0_20px_60px_rgba(0,0,0,0.6)]
-                      rounded-3xl p-8">
-
-        <div className="flex gap-3 mb-8">
+      <div
+        className="
+          backdrop-blur-2xl bg-white/5 border border-white/10
+          shadow-[0_20px_60px_rgba(0,0,0,0.6)]
+          rounded-3xl
+          p-4 sm:p-6 lg:p-8
+          overflow-y-auto
+        "
+      >
+        {/* Add Task */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-8">
           <input
             type="text"
             placeholder="Create a new streak..."
-            className="flex-1 px-4 py-3
-                       bg-white/5 border border-white/10
-                       rounded-xl text-white placeholder-zinc-400
-                       focus:outline-none focus:ring-2 focus:ring-purple-500/40
-                       transition"
+            className="
+              flex-1 px-4 py-3
+              bg-white/5 border border-white/10
+              rounded-xl text-white placeholder-zinc-400
+              focus:outline-none focus:ring-2 focus:ring-purple-500/40
+              transition
+            "
             value={newTask}
             onChange={(e) => setNewTask(e.target.value)}
           />
 
           <button
             onClick={addTask}
-            className="px-6 py-3
-                       bg-purple-500/20 border border-purple-400/30
-                       text-purple-300 rounded-xl
-                       hover:bg-purple-500/30
-                       transition-all duration-200"
+            className="
+              px-6 py-3
+              bg-purple-500/20 border border-purple-400/30
+              text-purple-300 rounded-xl
+              hover:bg-purple-500/30
+              transition-all duration-200
+              active:scale-95
+            "
           >
             Add
           </button>
         </div>
 
+        {/* Task List */}
         <div className="space-y-4">
           {tasks.map((task) => (
             <div
               key={task.id}
-              className="flex justify-between items-center
-                         backdrop-blur-xl bg-white/5
-                         border border-white/10
-                         shadow-[0_8px_30px_rgba(0,0,0,0.5)]
-                         p-5 rounded-2xl"
+              className="
+                flex flex-col sm:flex-row sm:justify-between sm:items-center
+                gap-4
+                backdrop-blur-xl bg-white/5
+                border border-white/10
+                shadow-[0_8px_30px_rgba(0,0,0,0.5)]
+                p-4 sm:p-5 rounded-2xl
+              "
             >
               <div>
                 <p className="font-semibold text-white text-lg">
@@ -259,18 +277,24 @@ export default function StreakTab({
               <div className="flex gap-3">
                 <button
                   onClick={() => completeTask(task)}
-                  className="px-4 py-2
-                             bg-green-500/20 border border-green-400/30
-                             text-green-300 rounded-xl"
+                  className="
+                    px-4 py-2
+                    bg-green-500/20 border border-green-400/30
+                    text-green-300 rounded-xl
+                    active:scale-95
+                  "
                 >
                   Complete
                 </button>
 
                 <button
                   onClick={() => deleteTask(task.id)}
-                  className="px-4 py-2
-                             bg-red-500/20 border border-red-400/30
-                             text-red-300 rounded-xl"
+                  className="
+                    px-4 py-2
+                    bg-red-500/20 border border-red-400/30
+                    text-red-300 rounded-xl
+                    active:scale-95
+                  "
                 >
                   Delete
                 </button>
@@ -278,7 +302,6 @@ export default function StreakTab({
             </div>
           ))}
         </div>
-
       </div>
     </div>
   );

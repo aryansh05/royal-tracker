@@ -18,32 +18,25 @@ export default function DashboardClient() {
 
   const isValidMode = modeParam === "monarch" || modeParam === "slave";
 
-  // Redirect if invalid mode
   useEffect(() => {
-    if (!isValidMode) {
-      router.replace("/");
-    }
+    if (!isValidMode) router.replace("/");
   }, [isValidMode, router]);
 
   if (!isValidMode) return null;
 
   const currentMode: "monarch" | "slave" = modeParam;
 
-  // Auth check for monarch
   useEffect(() => {
     const checkAuth = async () => {
       if (currentMode === "monarch") {
         const { data } = await supabase.auth.getSession();
-
         if (!data.session) {
           router.replace("/");
           return;
         }
       }
-
       setCheckingAuth(false);
     };
-
     checkAuth();
   }, [currentMode, router]);
 
@@ -72,83 +65,72 @@ export default function DashboardClient() {
     if (currentMode === "monarch") {
       await supabase.auth.signOut();
     }
-
     localStorage.clear();
     router.replace("/");
   };
 
   return (
     <div
-      className="min-h-screen text-white p-6 space-y-6 relative"
+      className="min-h-screen w-full text-white relative overflow-x-hidden"
       style={{
         backgroundImage: "url('/images/dashboard-bg.jpg')",
         backgroundSize: "cover",
         backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
       }}
     >
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-none" />
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
-      <div className="relative z-10 space-y-6">
-        {/* Tabs */}
-        <div className="backdrop-blur-2xl bg-white/5 border border-white/10 
-                        shadow-[0_10px_40px_rgba(0,0,0,0.6)]
-                        rounded-3xl flex overflow-hidden w-full max-w-4xl mx-auto">
+      <div className="relative z-10 flex flex-col h-screen">
 
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.key;
-            return (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`
-                  flex-1 py-3 text-sm font-semibold transition-all duration-200 relative
-                  ${
-                    isActive
-                      ? "bg-purple-600/30 text-white backdrop-blur-md"
-                      : "text-zinc-300 hover:bg-white/5"
-                  }
-                `}
-              >
-                {tab.label}
+        {/* Top Header */}
+        <div className="flex items-center justify-between px-4 py-4">
+          <h1 className="text-lg font-semibold tracking-wide">
+            Aryan Sharma
+          </h1>
 
-                {isActive && (
-                  <span
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 
-                               w-3/4 h-[3px] bg-purple-400 rounded-full 
-                               shadow-[0_0_10px_rgba(128,90,213,0.7)]"
-                  />
-                )}
-              </button>
-            );
-          })}
+          <button
+            onClick={handleLogout}
+            className="text-sm px-3 py-1.5 bg-red-500/20 border border-red-400/40 rounded-lg active:scale-95 transition"
+          >
+            Logout
+          </button>
+        </div>
 
-          <div className="flex items-center pr-4">
-            <button
-              onClick={handleLogout}
-              className="
-                px-5 py-2.5
-                bg-red-500/20 border border-red-400/30
-                text-red-300 rounded
-                hover:bg-red-500/30
-                transition-all duration-200
-              "
-            >
-              Logout
-            </button>
+        {/* Tab Bar (Mobile Friendly) */}
+        <div className="px-3">
+          <div className="flex w-full bg-white/5 rounded-2xl p-1">
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`
+                    flex-1 py-2 text-sm rounded-xl transition-all
+                    ${
+                      isActive
+                        ? "bg-purple-600 text-white shadow-lg"
+                        : "text-zinc-400"
+                    }
+                  `}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Animated Content */}
-        <div className="max-w-6xl mx-auto relative z-10">
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto px-3 pt-4 pb-6">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.35 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.25 }}
             >
               {renderTabContent()}
             </motion.div>

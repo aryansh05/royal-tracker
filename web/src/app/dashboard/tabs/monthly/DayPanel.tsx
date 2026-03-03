@@ -37,7 +37,9 @@ export default function DayPanel({ date, mode, demoEntries }: Props) {
     type: "success" | "error";
   } | null>(null);
 
-  const PIXELS = 1200;
+  const PIXELS = typeof window !== "undefined" && window.innerWidth < 768
+  ? 900
+  : 1200;
   const DAY_MINUTES = 1440;
 
   /* ---------------- NOTIFICATION ---------------- */
@@ -157,10 +159,8 @@ export default function DayPanel({ date, mode, demoEntries }: Props) {
 
   /* ---------------- DRAG ---------------- */
 
-  function handleMouseDown(e: React.MouseEvent) {
-  // Prevent drag if clicking inside modal
+ function handlePointerDown(e: React.PointerEvent) {
   if ((e.target as HTMLElement).closest(".modal-content")) return;
-
   if (!containerRef.current) return;
 
   const rect = containerRef.current.getBoundingClientRect();
@@ -171,8 +171,8 @@ export default function DayPanel({ date, mode, demoEntries }: Props) {
   setCurrentY(y);
 }
 
-  useEffect(() => {
-  function move(e: MouseEvent) {
+useEffect(() => {
+  function move(e: PointerEvent) {
     if (!isDragging || !containerRef.current || startY === null) return;
 
     const rect = containerRef.current.getBoundingClientRect();
@@ -181,98 +181,96 @@ export default function DayPanel({ date, mode, demoEntries }: Props) {
     );
   }
 
-  async function up(e: MouseEvent) {
-  if (!isDragging || !containerRef.current || startY === null) return;
+  async function up(e: PointerEvent) {
+    if (!isDragging || !containerRef.current || startY === null) return;
 
-  const rect = containerRef.current.getBoundingClientRect();
-  const endY = clamp(e.clientY - rect.top + containerRef.current.scrollTop);
+    const rect = containerRef.current.getBoundingClientRect();
+    const endY = clamp(e.clientY - rect.top + containerRef.current.scrollTop);
 
-  setIsDragging(false);
+    setIsDragging(false);
 
-  const start = Math.min(
-    Math.floor((startY / PIXELS) * DAY_MINUTES),
-    Math.floor((endY / PIXELS) * DAY_MINUTES)
-  );
+    const start = Math.min(
+      Math.floor((startY / PIXELS) * DAY_MINUTES),
+      Math.floor((endY / PIXELS) * DAY_MINUTES)
+    );
 
-  const end = Math.max(
-    Math.floor((startY / PIXELS) * DAY_MINUTES),
-    Math.floor((endY / PIXELS) * DAY_MINUTES)
-  );
+    const end = Math.max(
+      Math.floor((startY / PIXELS) * DAY_MINUTES),
+      Math.floor((endY / PIXELS) * DAY_MINUTES)
+    );
 
-  if (end - start < 1) return;
+    if (end - start < 1) return;
 
-  const overlap = blocks.some(
-    (b) => start < b.end && end > b.start
-  );
+    const overlap = blocks.some(
+      (b) => start < b.end && end > b.start
+    );
 
-  if (overlap) {
-    showNotification("Time overlaps existing block ❌", "error");
-    return;
-  }
-
-  const startTime = formatTime(start);
-  const endTime = formatTime(end);
-
-  if (mode === "monarch") {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const user = sessionData.session?.user;
-    if (!user) return;
-
-    const { data, error } = await supabase
-      .from("work_entries")
-      .insert({
-        user_id: user.id,
-        date,
-        start_time: startTime,
-        end_time: endTime,
-        duration: end - start,
-        description: "",
-      })
-      .select()
-      .single();
-
-    if (error) {
-      showNotification("Failed to create block ❌", "error");
+    if (overlap) {
+      showNotification("Time overlaps existing block ❌", "error");
       return;
     }
 
-    await fetchBlocksFromDB();
+    const startTime = formatTime(start);
+    const endTime = formatTime(end);
 
-    // open edit immediately
-    openEdit({
-      id: data.id,
-      start,
-      end,
-      gradient: randomGradient(),
-      description: "",
-    });
+    if (mode === "monarch") {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const user = sessionData.session?.user;
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("work_entries")
+        .insert({
+          user_id: user.id,
+          date,
+          start_time: startTime,
+          end_time: endTime,
+          duration: end - start,
+          description: "",
+        })
+        .select()
+        .single();
+
+      if (error) {
+        showNotification("Failed to create block ❌", "error");
+        return;
+      }
+
+      await fetchBlocksFromDB();
+
+      openEdit({
+        id: data.id,
+        start,
+        end,
+        gradient: randomGradient(),
+        description: "",
+      });
+    }
+
+    if (mode === "slave") {
+      const newBlock: Block = {
+        id: crypto.randomUUID(),
+        start,
+        end,
+        gradient: randomGradient(),
+        description: "",
+      };
+
+      setBlocks((prev) => [...prev, newBlock]);
+      openEdit(newBlock);
+    }
+
+    showNotification("Work Added ✅");
   }
 
-  if (mode === "slave") {
-    const newBlock: Block = {
-      id: crypto.randomUUID(),
-      start,
-      end,
-      gradient: randomGradient(),
-      description: "",
-    };
-
-    setBlocks(prev => [...prev, newBlock]);
-
-    openEdit(newBlock);
-  }
-
-  showNotification("Work Added ✅");
-}
-
-  window.addEventListener("mousemove", move);
-  window.addEventListener("mouseup", up);
+  window.addEventListener("pointermove", move);
+  window.addEventListener("pointerup", up);
 
   return () => {
-    window.removeEventListener("mousemove", move);
-    window.removeEventListener("mouseup", up);
+    window.removeEventListener("pointermove", move);
+    window.removeEventListener("pointerup", up);
   };
-}, [isDragging, startY, date, mode]);
+}, [isDragging, startY, date, mode, blocks]);
 
   /* ---------------- EDIT ---------------- */
 
@@ -405,10 +403,10 @@ export default function DayPanel({ date, mode, demoEntries }: Props) {
     {/* ---------------- TIMELINE ---------------- */}
     <div
       ref={containerRef}
-      className="relative bg-white/[0.03] backdrop-blur-xl
-                 border border-white/10 rounded-2xl
-                 w-full cursor-crosshair"
-      onMouseDown={handleMouseDown}
+      className="timeline-container relative bg-white/[0.03] backdrop-blur-xl
+             border border-white/10 rounded-2xl
+             w-full"
+      onPointerDown={handlePointerDown}
     >
       <div style={{ height: PIXELS, position: "relative" }}>
 
@@ -503,7 +501,7 @@ export default function DayPanel({ date, mode, demoEntries }: Props) {
           className="absolute inset-0 bg-black/50 backdrop-blur-sm"
           onClick={() => setEditingBlock(null)}
         />
-        <div className="relative w-80 backdrop-blur-2xl
+        <div className="relative w-[90%] max-w-sm backdrop-blur-2xl
                         bg-white/10 border border-white/20
                         rounded-2xl p-6 space-y-5
                         shadow-[0_40px_120px_rgba(0,0,0,0.6)]">

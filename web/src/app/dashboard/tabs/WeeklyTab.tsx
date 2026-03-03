@@ -49,12 +49,9 @@ export default function WeeklyTab({
     if (mode === "monarch") {
       fetchWeeklyFromDB();
     } else {
-      // Slave mode = no persistence
       processWeeklyData([]);
     }
   }, [mode]);
-
-  /* ---------------- MONARCH ---------------- */
 
   async function fetchWeeklyFromDB() {
     const { data: sessionData } = await supabase.auth.getSession();
@@ -77,11 +74,8 @@ export default function WeeklyTab({
     processWeeklyData(data);
   }
 
-  /* ---------------- COMMON PROCESSING ---------------- */
-
   function processWeeklyData(entries: any[]) {
     const weekDates = getWeekDates();
-
     const dailyTotals: Record<string, number> = {};
 
     weekDates.forEach((d) => {
@@ -121,71 +115,75 @@ export default function WeeklyTab({
   /* ---------------- UI ---------------- */
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
 
       {/* WEEKLY TOTAL */}
       <div className="backdrop-blur-2xl bg-white/5 border border-white/10
                       shadow-[0_20px_60px_rgba(0,0,0,0.6)]
-                      rounded-3xl p-8">
+                      rounded-3xl p-5 sm:p-8">
         <p className="text-sm text-zinc-400 mb-2">
           Total This Week
         </p>
-        <p className="text-3xl font-bold text-purple-400 tracking-wide">
+        <p className="text-2xl sm:text-3xl font-bold text-purple-400 tracking-wide">
           {formatDuration(weeklyTotal)}
         </p>
       </div>
 
-      {/* WEEK GRID */}
-      <div className="grid grid-cols-7 gap-4">
-        {dailyData.map((day) => {
-          const dateObj = new Date(day.date);
-          const weekday = dateObj.toLocaleDateString("en-US", {
-            weekday: "short",
-          });
-          const fullDate = dateObj.toLocaleDateString("en-GB");
-          const isHighest = day.date === highestDate;
+      {/* WEEK GRID (Mobile Scrollable) */}
+      <div className="overflow-x-auto">
+        <div className="flex sm:grid sm:grid-cols-7 gap-4 min-w-[700px] sm:min-w-0">
+          {dailyData.map((day) => {
+            const dateObj = new Date(day.date);
+            const weekday = dateObj.toLocaleDateString("en-US", {
+              weekday: "short",
+            });
+            const fullDate = dateObj.toLocaleDateString("en-GB");
+            const isHighest = day.date === highestDate;
 
-          return (
-            <div
-              key={day.date}
-              className={`backdrop-blur-xl border rounded-2xl p-5 text-center transition-all duration-300 hover:scale-[1.03]
-              ${
-                isHighest
-                  ? "bg-purple-500/20 border-purple-400/40 shadow-purple-500/20 shadow-lg"
-                  : "bg-white/5 border-white/10 hover:bg-white/10"
-              }`}
-            >
-              <p className="text-xs text-zinc-400 uppercase tracking-wider">
-                {weekday}
-              </p>
+            return (
+              <div
+                key={day.date}
+                className={`flex-1 backdrop-blur-xl border rounded-2xl p-4 sm:p-5 text-center transition-all duration-300 hover:scale-[1.03]
+                ${
+                  isHighest
+                    ? "bg-purple-500/20 border-purple-400/40 shadow-purple-500/20 shadow-lg"
+                    : "bg-white/5 border-white/10 hover:bg-white/10"
+                }`}
+              >
+                <p className="text-xs text-zinc-300 uppercase tracking-wider">
+                  {weekday}
+                </p>
 
-              <p className="text-xs text-zinc-500 mt-1">
-                {fullDate}
-              </p>
+                <p className="text-xs text-zinc-300 mt-1">
+                  {fullDate}
+                </p>
 
-              <p className={`mt-3 font-semibold text-lg
-                ${isHighest ? "text-purple-300" : "text-white"}`}>
-                {formatDuration(day.minutes)}
-              </p>
-            </div>
-          );
-        })}
+                <p
+                  className={`mt-3 font-semibold text-base sm:text-lg
+                  ${isHighest ? "text-purple-300" : "text-white"}`}
+                >
+                  {formatDuration(day.minutes)}
+                </p>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* HIGHEST DAY */}
       {highestDate && highestMinutes > 0 && (
         <div className="backdrop-blur-2xl bg-white/5 border border-white/10
                         shadow-[0_20px_60px_rgba(0,0,0,0.6)]
-                        rounded-3xl p-8">
+                        rounded-3xl p-5 sm:p-8">
           <p className="text-sm text-zinc-400 mb-3">
             Highest Day This Week
           </p>
 
-          <p className="text-xl font-semibold text-white">
+          <p className="text-lg sm:text-xl font-semibold text-white">
             {new Date(highestDate).toLocaleDateString("en-GB")}
           </p>
 
-          <p className="text-green-400 text-lg mt-2 font-semibold">
+          <p className="text-green-400 text-base sm:text-lg mt-2 font-semibold">
             {formatDuration(highestMinutes)}
           </p>
         </div>
@@ -195,10 +193,10 @@ export default function WeeklyTab({
       {highestMinutes === 0 && (
         <div className="backdrop-blur-2xl bg-white/5 border border-white/10
                         shadow-[0_20px_60px_rgba(0,0,0,0.6)]
-                        rounded-3xl p-8 text-zinc-400 text-center">
+                        rounded-3xl p-6 sm:p-8 text-zinc-400 text-center">
           No work recorded this week.
         </div>
       )}
     </div>
   );
-}
+} 
