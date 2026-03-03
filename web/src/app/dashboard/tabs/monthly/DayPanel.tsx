@@ -390,9 +390,13 @@ export default function DayPanel({ date, mode, demoEntries }: Props) {
 
     {/* ---------------- HEADER ---------------- */}
     <div className="mb-6">
-      <h2 className="text-2xl font-bold text-white tracking-tight">
-        {date}
-      </h2>
+     <h2 className="text-2xl font-bold text-white tracking-tight">
+  {new Date(date).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  })}
+</h2>
       <p className="text-sm text-zinc-400 mt-1">
         Total: {formatDuration(totalMinutes)}
       </p>
