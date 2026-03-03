@@ -47,7 +47,7 @@ export default function HomePage() {
 
   function handleSlave() {
     localStorage.setItem("royal_mode", "slave");
-    router.push("/dashboard");
+    router.push("/dashboard?mode=slave");
   }
 
   return (

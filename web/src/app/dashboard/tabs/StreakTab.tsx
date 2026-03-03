@@ -25,6 +25,22 @@ export default function StreakTab({
     type: "success" | "error";
   } | null>(null);
 
+  /* ---------------- LOCAL DATE HELPERS ---------------- */
+
+  function getLocalDateString(date?: Date) {
+    const d = date || new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  function getYesterdayString() {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    return getLocalDateString(yesterday);
+  }
+
   /* ---------------- NOTIFICATION ---------------- */
 
   function showNotification(
@@ -68,21 +84,19 @@ export default function StreakTab({
     setTasks(resetBrokenStreaks(data));
   }
 
+  /* ---------------- RESET BROKEN STREAKS ---------------- */
+
   function resetBrokenStreaks(data: StreakTask[]) {
-    const todayStr = new Date().toISOString().split("T")[0];
+    const todayStr = getLocalDateString();
+    const yesterdayStr = getYesterdayString();
 
     return data.map((task) => {
       if (!task.last_completed) return task;
 
-      const lastStr = new Date(task.last_completed)
-        .toISOString()
-        .split("T")[0];
-
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split("T")[0];
-
-      if (lastStr !== todayStr && lastStr !== yesterdayStr) {
+      if (
+        task.last_completed !== todayStr &&
+        task.last_completed !== yesterdayStr
+      ) {
         return { ...task, current_streak: 0 };
       }
 
@@ -126,25 +140,18 @@ export default function StreakTab({
   /* ---------------- COMPLETE TASK ---------------- */
 
   async function completeTask(task: StreakTask) {
-    const todayStr = new Date().toISOString().split("T")[0];
+    const todayStr = getLocalDateString();
+    const yesterdayStr = getYesterdayString();
 
     let newStreak = 1;
 
     if (task.last_completed) {
-      const lastStr = new Date(task.last_completed)
-        .toISOString()
-        .split("T")[0];
-
-      if (lastStr === todayStr) {
+      if (task.last_completed === todayStr) {
         showNotification("Already completed today ⚡", "error");
         return;
       }
 
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split("T")[0];
-
-      if (lastStr === yesterdayStr) {
+      if (task.last_completed === yesterdayStr) {
         newStreak = task.current_streak + 1;
       }
     }
@@ -194,75 +201,47 @@ export default function StreakTab({
   return (
     <div className="relative w-full">
 
-      {/* Notification */}
       {notification && (
-        <div
-          className="
-            fixed bottom-6 right-4 sm:right-8 z-[9999]
-            backdrop-blur-xl bg-white/10
-            border border-white/20
-            shadow-[0_8px_30px_rgba(0,0,0,0.6)]
-            px-5 py-3 rounded-2xl
-            text-white text-sm font-medium
-          "
-        >
+        <div className="fixed bottom-6 right-4 sm:right-8 z-[9999]
+                        backdrop-blur-xl bg-white/10
+                        border border-white/20
+                        shadow-[0_8px_30px_rgba(0,0,0,0.6)]
+                        px-5 py-3 rounded-2xl
+                        text-white text-sm font-medium">
           {notification.message}
         </div>
       )}
 
-      <div
-        className="
-          backdrop-blur-2xl bg-white/5 border border-white/10
-          shadow-[0_20px_60px_rgba(0,0,0,0.6)]
-          rounded-3xl
-          p-4 sm:p-6 lg:p-8
-          overflow-y-auto
-        "
-      >
-        {/* Add Task */}
+      <div className="backdrop-blur-2xl bg-white/5 border border-white/10
+                      shadow-[0_20px_60px_rgba(0,0,0,0.6)]
+                      rounded-3xl p-4 sm:p-6 lg:p-8">
+
         <div className="flex flex-col sm:flex-row gap-3 mb-8">
           <input
             type="text"
             placeholder="Create a new streak..."
-            className="
-              flex-1 px-4 py-3
-              bg-white/5 border border-white/10
-              rounded-xl text-white placeholder-zinc-400
-              focus:outline-none focus:ring-2 focus:ring-purple-500/40
-              transition
-            "
+            className="flex-1 px-4 py-3 bg-white/5 border border-white/10
+                       rounded-xl text-white placeholder-zinc-400
+                       focus:outline-none focus:ring-2 focus:ring-purple-500/40"
             value={newTask}
             onChange={(e) => setNewTask(e.target.value)}
           />
 
           <button
             onClick={addTask}
-            className="
-              px-6 py-3
-              bg-purple-500/20 border border-purple-400/30
-              text-purple-300 rounded-xl
-              hover:bg-purple-500/30
-              transition-all duration-200
-              active:scale-95
-            "
-          >
+            className="px-6 py-3 bg-purple-500/20 border border-purple-400/30
+                       text-purple-300 rounded-xl active:scale-95">
             Add
           </button>
         </div>
 
-        {/* Task List */}
         <div className="space-y-4">
           {tasks.map((task) => (
             <div
               key={task.id}
-              className="
-                flex flex-col sm:flex-row sm:justify-between sm:items-center
-                gap-4
-                backdrop-blur-xl bg-white/5
-                border border-white/10
-                shadow-[0_8px_30px_rgba(0,0,0,0.5)]
-                p-4 sm:p-5 rounded-2xl
-              "
+              className="flex flex-col sm:flex-row sm:justify-between sm:items-center
+                         gap-4 backdrop-blur-xl bg-white/5 border border-white/10
+                         p-4 rounded-2xl"
             >
               <div>
                 <p className="font-semibold text-white text-lg">
@@ -277,31 +256,22 @@ export default function StreakTab({
               <div className="flex gap-3">
                 <button
                   onClick={() => completeTask(task)}
-                  className="
-                    px-4 py-2
-                    bg-green-500/20 border border-green-400/30
-                    text-green-300 rounded-xl
-                    active:scale-95
-                  "
-                >
+                  className="px-4 py-2 bg-green-500/20 border border-green-400/30
+                             text-green-300 rounded-xl active:scale-95">
                   Complete
                 </button>
 
                 <button
                   onClick={() => deleteTask(task.id)}
-                  className="
-                    px-4 py-2
-                    bg-red-500/20 border border-red-400/30
-                    text-red-300 rounded-xl
-                    active:scale-95
-                  "
-                >
+                  className="px-4 py-2 bg-red-500/20 border border-red-400/30
+                             text-red-300 rounded-xl active:scale-95">
                   Delete
                 </button>
               </div>
             </div>
           ))}
         </div>
+
       </div>
     </div>
   );

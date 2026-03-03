@@ -123,19 +123,44 @@ export default function DashboardClient() {
         </div>
 
         {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto px-3 pt-4 pb-6">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.25 }}
-            >
-              {renderTabContent()}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+        {/* Scrollable Content Area */}
+<div className="flex-1 overflow-hidden relative">
+
+  <AnimatePresence mode="wait">
+    <motion.div
+      key={activeTab}
+      className="h-full overflow-y-auto px-3 pt-4 pb-6"
+      drag="x"
+      dragConstraints={{ left: 0, right: 0 }}
+      onDragEnd={(event, info) => {
+        const swipeThreshold = 80;
+
+        if (info.offset.x < -swipeThreshold) {
+          // Swipe Left → Next Tab
+          const currentIndex = tabs.findIndex(t => t.key === activeTab);
+          if (currentIndex < tabs.length - 1) {
+            setActiveTab(tabs[currentIndex + 1].key);
+          }
+        }
+
+        if (info.offset.x > swipeThreshold) {
+          // Swipe Right → Previous Tab
+          const currentIndex = tabs.findIndex(t => t.key === activeTab);
+          if (currentIndex > 0) {
+            setActiveTab(tabs[currentIndex - 1].key);
+          }
+        }
+      }}
+      initial={{ x: 100, opacity: 0 }}
+      exit={{ x: -100, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ duration: 0.25 }}
+    >
+      {renderTabContent()}
+    </motion.div>
+  </AnimatePresence>
+
+</div>
       </div>
     </div>
   );
