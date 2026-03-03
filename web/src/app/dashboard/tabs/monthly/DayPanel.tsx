@@ -390,6 +390,7 @@ useEffect(() => {
     <div className="mb-6">
      <h2 className="text-2xl font-bold text-white tracking-tight">
   {new Date(date).toLocaleDateString("en-GB", {
+    weekday: "long",   
     day: "numeric",
     month: "long",
     year: "numeric",

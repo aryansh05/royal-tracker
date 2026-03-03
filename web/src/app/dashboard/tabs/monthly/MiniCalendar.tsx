@@ -118,6 +118,14 @@ export default function MiniCalendar({
   const monthName = current.toLocaleString("default", { month: "long" });
   const formattedMonth = String(month + 1).padStart(2, "0");
 
+  useEffect(() => {
+  if (!selectedDate) return;
+
+  const [year, month] = selectedDate.split("-").map(Number);
+
+  setCurrent(new Date(year, month - 1, 1));
+}, [selectedDate]);
+
   return (
     <div
       className="
