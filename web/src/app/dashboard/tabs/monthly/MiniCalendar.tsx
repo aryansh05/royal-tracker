@@ -38,17 +38,18 @@ export default function MiniCalendar({
     const s = seconds % 60;
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   }
-
+const durationRef = useRef(0);
   function startTimer() {
-    const seconds = parseTime(display);
-    if (seconds <= 0) return;
+  const seconds = parseTime(display);
+  if (seconds <= 0) return;
 
-    if (navigator.vibrate) navigator.vibrate(50);
+  if (navigator.vibrate) navigator.vibrate(50);
 
-    setTimeLeft(seconds);
-    setIsRunning(true);
-    startTimeRef.current = new Date();
-  }
+  durationRef.current = seconds; // store original duration
+  setTimeLeft(seconds);
+  setIsRunning(true);
+  startTimeRef.current = new Date();
+}
 
   function stopTimer() {
     if (navigator.vibrate) navigator.vibrate(30);
@@ -68,8 +69,7 @@ export default function MiniCalendar({
       const elapsed =
         Math.floor((now.getTime() - startTimeRef.current.getTime()) / 1000);
 
-      const remaining = parseTime(display) - elapsed;
-
+const remaining = durationRef.current - elapsed;
       if (remaining <= 0) {
         if (intervalRef.current) clearInterval(intervalRef.current);
         setIsRunning(false);

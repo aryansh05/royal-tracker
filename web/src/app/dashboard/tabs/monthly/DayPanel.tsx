@@ -84,6 +84,30 @@ export default function DayPanel({ date, mode, demoEntries }: Props) {
   }
 }, [date, mode, demoEntries]);
 
+useEffect(() => {
+  if (mode !== "monarch") return;
+
+  const channel = supabase
+    .channel("work_entries_changes")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "work_entries",
+        filter: `date=eq.${date}`,
+      },
+      () => {
+        fetchBlocksFromDB();
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, [mode, date]);
+
   async function fetchBlocksFromDB() {
     const { data: sessionData } = await supabase.auth.getSession();
     const user = sessionData.session?.user;

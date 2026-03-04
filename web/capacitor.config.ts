@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'Royal Tracker',
   webDir: 'www',
   server: {
-    url: 'https://royal-tracker-mine.vercel.app/',
+    url: 'https://royal-tracker-mine.vercel.app',
     cleartext: true
   }
 };
