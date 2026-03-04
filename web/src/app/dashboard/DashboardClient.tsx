@@ -65,7 +65,7 @@ export default function DashboardClient() {
     if (currentMode === "monarch") {
       await supabase.auth.signOut();
     }
-    localStorage.clear();
+    await supabase.auth.signOut();
     router.replace("/");
   };
 
