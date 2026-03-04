@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function HomePage() {
   const router = useRouter();
@@ -9,17 +10,33 @@ export default function HomePage() {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    setIsMobile(window.innerWidth < 768);
+    async function init() {
+      setIsMobile(window.innerWidth < 768);
 
-    const generated = Array.from({ length: 25 }).map(() => ({
-      size: Math.random() * 6 + 4,
-      top: Math.random() * 100,
-      left: Math.random() * 100,
-      duration: Math.random() * 10 + 10,
-    }));
+      /* ---------------- SESSION CHECK ---------------- */
 
-    setParticles(generated);
-  }, []);
+      const { data } = await supabase.auth.getSession();
+
+      if (data.session) {
+        const savedMode = localStorage.getItem("royal_mode") || "monarch";
+        router.replace(`/dashboard?mode=${savedMode}`);
+        return;
+      }
+
+      /* ---------------- PARTICLES ---------------- */
+
+      const generated = Array.from({ length: 25 }).map(() => ({
+        size: Math.random() * 6 + 4,
+        top: Math.random() * 100,
+        left: Math.random() * 100,
+        duration: Math.random() * 10 + 10,
+      }));
+
+      setParticles(generated);
+    }
+
+    init();
+  }, [router]);
 
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
     if (isMobile) return;
@@ -62,7 +79,7 @@ export default function HomePage() {
       {/* Dark Overlay */}
       <div className="absolute inset-0 bg-black/70" />
 
-      {/* Animated Gradient Overlay */}
+      {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-900/60 via-black/40 to-black/80 animate-gradient" />
 
       {/* Spotlight */}
@@ -144,9 +161,6 @@ export default function HomePage() {
 
         </div>
       </div>
-
-      {/* Animations remain SAME */}
-    
     </div>
   );
 }
